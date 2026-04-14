@@ -12,6 +12,7 @@ import androidx.navigation.compose.rememberNavController
 import com.dna.app.ui.auth.AuthViewModel
 import com.dna.app.ui.auth.SignInScreen
 import com.dna.app.ui.library.LibraryScreen
+import com.dna.app.ui.upload.UploadDressScreen
 
 object Routes {
     const val SIGN_IN = "sign_in"
@@ -55,9 +56,16 @@ fun DnaNavHost(
 
         composable(Routes.LIBRARY) {
             LibraryScreen(
-                onAddDress = { /* TODO(M3): nav.navigate(Routes.UPLOAD) */ },
+                onAddDress = { nav.navigate(Routes.UPLOAD) },
                 onGenerate = { /* TODO(M5): nav.navigate(Routes.GENERATE) */ },
                 onDressClick = { /* TODO(M4): nav.navigate(detailRoute(it.id)) */ },
+            )
+        }
+
+        composable(Routes.UPLOAD) {
+            UploadDressScreen(
+                onBack = { nav.popBackStack() },
+                onUploaded = { nav.popBackStack() },
             )
         }
     }

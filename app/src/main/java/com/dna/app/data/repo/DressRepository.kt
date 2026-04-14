@@ -6,6 +6,7 @@ import androidx.paging.PagingData
 import androidx.paging.map
 import com.dna.app.data.local.db.DressDao
 import com.dna.app.data.local.db.toDomain
+import com.dna.app.data.local.db.toEntity
 import com.dna.app.domain.model.DressItem
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -32,4 +33,11 @@ class DressRepository @Inject constructor(
         ).flow.map { page -> page.map { it.toDomain() } }
 
     fun countForOwner(uid: String): Flow<Int> = dao.countByOwner(uid)
+
+    /** Insert a placeholder row immediately so the grid reflects the upload. */
+    suspend fun insertLocal(dress: DressItem) = dao.upsert(dress.toEntity())
+
+    suspend fun findById(id: String): DressItem? = dao.byId(id)?.toDomain()
+
+    suspend fun delete(id: String) = dao.delete(id)
 }

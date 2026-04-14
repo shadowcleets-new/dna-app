@@ -59,6 +59,7 @@ paging-compose = { group = "androidx.paging", name = "paging-compose", version.r
 
 work-runtime-ktx = { group = "androidx.work", name = "work-runtime-ktx", version.ref = "workManager" }
 hilt-work = { group = "androidx.hilt", name = "hilt-work", version = "1.2.0" }
+androidx-hilt-compiler = { group = "androidx.hilt", name = "hilt-compiler", version = "1.2.0" }
 
 coil-compose = { group = "io.coil-kt.coil3", name = "coil-compose", version.ref = "coil" }
 coil-network-okhttp = { group = "io.coil-kt.coil3", name = "coil-network-okhttp", version.ref = "coil" }
