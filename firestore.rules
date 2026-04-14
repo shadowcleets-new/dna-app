@@ -1,0 +1,31 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(ownerUid) {
+      return signedIn() && request.auth.uid == ownerUid;
+    }
+
+    match /dresses/{id} {
+      allow read:   if signedIn() && isOwner(resource.data.ownerUid);
+      allow create: if signedIn() && isOwner(request.resource.data.ownerUid);
+      allow update, delete: if signedIn() && isOwner(resource.data.ownerUid);
+    }
+
+    match /designs/{id} {
+      allow read:   if signedIn() && isOwner(resource.data.ownerUid);
+      allow create: if signedIn() && isOwner(request.resource.data.ownerUid);
+      allow update, delete: if signedIn() && isOwner(resource.data.ownerUid);
+    }
+
+    // Per-user daily quota counters — written only by Cloud Functions via admin SDK.
+    match /quotas/{uid} {
+      allow read:  if signedIn() && request.auth.uid == uid;
+      allow write: if false;
+    }
+  }
+}

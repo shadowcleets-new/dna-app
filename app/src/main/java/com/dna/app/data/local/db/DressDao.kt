@@ -27,6 +27,9 @@ interface DressDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun upsertAll(dresses: List<DressEntity>)
 
+    @Query("UPDATE dresses SET designSpecJson = :json WHERE id = :id")
+    suspend fun updateDesignSpec(id: String, json: String)
+
     @Query("DELETE FROM dresses WHERE id = :id")
     suspend fun delete(id: String)
 

@@ -7,9 +7,8 @@ package com.dna.app.domain.taxonomy
  *  - Gemini structured-output schemas (server-side, mirrored in zod)
  *  - UI chip selectors
  *
- * Only the enums needed for M2 (Library grid) are populated. Sleeve / Neckline /
- * Silhouette / Length / Embellishment / Occasion land in M3 when auto-tagging
- * comes online.
+ * M3b subset. SleeveDetail / Length / Placement / FitType land in M5 when the
+ * full generation pipeline needs them.
  */
 enum class GarmentType {
     SALWAR_KAMEEZ,
@@ -30,4 +29,20 @@ enum class SyncState {
     SYNCED,
     /** Upload or sync failed; WorkManager will retry. */
     FAILED,
+}
+
+enum class Neckline { V, ROUND, BOAT, COLLAR, KEYHOLE, SQUARE, OTHER }
+
+enum class SleeveStyle {
+    FULL, THREE_QUARTER, HALF, SHORT, CAP, SLEEVELESS, BELL, OTHER,
+}
+
+enum class Silhouette {
+    ANARKALI, STRAIGHT, A_LINE, FLARED, PEPLUM, ASYMMETRIC, OTHER,
+}
+
+enum class Occasion { CASUAL, OFFICE, FESTIVE, BRIDAL, OTHER }
+
+enum class Embellishment {
+    NONE, ZARDOSI, CHIKANKARI, MIRROR, SEQUINS, EMBROIDERY_GENERIC, PRINT, OTHER,
 }

@@ -63,6 +63,10 @@ class UploadImageWorker @AssistedInject constructor(
 
             // Clean up staged files — originals live remotely now.
             listOf(thumbPath, displayPath, originalPath).forEach { runCatching { File(it).delete() } }
+
+            // Chain the auto-tag round-trip. Separate worker so tag failures
+            // don't retry the (much more expensive) upload.
+            TagDressWorker.enqueue(applicationContext, dressId)
             Result.success()
         }.getOrElse { e ->
             val failed = row.copy(syncState = SyncState.FAILED)

@@ -5,8 +5,10 @@ import com.dna.app.domain.taxonomy.Source
 import com.dna.app.domain.taxonomy.SyncState
 
 /**
- * Domain model for a dress in the user's library. Deliberately minimal for M2 —
- * extended with a `designSpec` field in M3 when auto-tagging lands.
+ * Domain model for a dress in the user's library.
+ *
+ * `designSpec` is null until the M3b tagging worker completes (Gemini 2.5
+ * Flash round-trip).
  */
 data class DressItem(
     val id: String,
@@ -18,4 +20,5 @@ data class DressItem(
     val source: Source,
     val syncState: SyncState,
     val createdAt: Long,
+    val designSpec: DesignSpec? = null,
 )
