@@ -1,0 +1,32 @@
+# Android / Gradle
+*.iml
+.gradle/
+/local.properties
+/.idea/
+.DS_Store
+/build/
+/app/build/
+/captures
+.externalNativeBuild
+.cxx
+local.properties
+
+# Kotlin
+*.kotlin_module
+
+# Firebase
+google-services.json
+functions/node_modules/
+functions/lib/
+functions/.env
+functions/.env.*
+!functions/.env.example
+
+# Node / tooling
+node_modules/
+*.log
+.env
+.env.local
+
+# OS
+Thumbs.db

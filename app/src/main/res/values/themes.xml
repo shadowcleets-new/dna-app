@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Splash / launcher theme. The Compose theme applies once MainActivity renders. -->
+    <style name="Theme.DnaApp" parent="android:Theme.Material.Light.NoActionBar" />
+</resources>
