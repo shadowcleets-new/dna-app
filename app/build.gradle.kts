@@ -5,8 +5,7 @@ plugins {
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.ksp)
     alias(libs.plugins.hilt)
-    // Enable once you drop google-services.json into app/
-    // alias(libs.plugins.google.services)
+    alias(libs.plugins.google.services)
 }
 
 android {
@@ -49,11 +48,17 @@ android {
 
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 
     packaging {
         resources.excludes += "/META-INF/{AL2.0,LGPL2.1}"
     }
+}
+
+ksp {
+    // Room schema export — kept in-tree for migration reviews.
+    arg("room.schemaLocation", "$projectDir/schemas")
 }
 
 dependencies {
@@ -100,15 +105,15 @@ dependencies {
     implementation(libs.coil.compose)
     implementation(libs.coil.network.okhttp)
 
-    // Firebase — uncomment once google-services.json is added
-    // implementation(platform(libs.firebase.bom))
-    // implementation(libs.firebase.auth)
-    // implementation(libs.firebase.firestore)
-    // implementation(libs.firebase.storage)
-    // implementation(libs.firebase.functions)
-    // implementation(libs.firebase.appcheck.playintegrity)
-    // debugImplementation(libs.firebase.appcheck.debug)
-    // implementation(libs.firebase.analytics)
+    // Firebase
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.auth)
+    implementation(libs.firebase.firestore)
+    implementation(libs.firebase.storage)
+    implementation(libs.firebase.functions)
+    implementation(libs.firebase.appcheck.playintegrity)
+    debugImplementation(libs.firebase.appcheck.debug)
+    implementation(libs.firebase.analytics)
 
     // Sign-in
     implementation(libs.androidx.credentials)
