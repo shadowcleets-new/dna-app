@@ -35,4 +35,8 @@ interface DressDao {
 
     @Query("DELETE FROM dresses WHERE ownerUid = :uid")
     suspend fun clearOwner(uid: String)
+
+    /** SYNCED rows for an owner — used by reconcile to detect remote deletions. */
+    @Query("SELECT id FROM dresses WHERE ownerUid = :uid AND syncState = 'SYNCED'")
+    suspend fun syncedIdsForOwner(uid: String): List<String>
 }

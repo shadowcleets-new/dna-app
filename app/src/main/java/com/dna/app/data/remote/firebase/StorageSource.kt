@@ -40,6 +40,17 @@ class StorageSource @Inject constructor(
         return UploadedTiers(thumbUrl, displayUrl, originalUrl)
     }
 
+    /**
+     * Best-effort delete of all tiers for a dress. Individual missing objects
+     * are ignored — the goal is "nothing lingering in our bucket".
+     */
+    suspend fun deleteDress(uid: String, dressId: String) {
+        val base = storage.reference.child("users/$uid/dresses/$dressId")
+        listOf("thumb.jpg", "display.jpg", "original.bin").forEach { name ->
+            runCatching { base.child(name).delete().await() }
+        }
+    }
+
     private suspend fun uploadAndGetUrl(
         ref: com.google.firebase.storage.StorageReference,
         file: File,

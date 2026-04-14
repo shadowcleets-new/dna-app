@@ -97,6 +97,7 @@ fun LibraryScreen(
     }
 }
 
+@OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
 @Composable
 private fun DressCard(dress: DressItem, onClick: () -> Unit) {
     Card(
