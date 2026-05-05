@@ -5,11 +5,12 @@ import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 
 @Database(
-    entities = [DressEntity::class],
-    version = 2,
+    entities = [DressEntity::class, ColorCorrectionEntity::class],
+    version = 3,
     exportSchema = true,
 )
 @TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun dressDao(): DressDao
+    abstract fun colorCorrectionDao(): ColorCorrectionDao
 }

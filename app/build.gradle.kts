@@ -106,6 +106,15 @@ dependencies {
     implementation(libs.coil.compose)
     implementation(libs.coil.network.okhttp)
 
+    // EXIF (orientation + ICC preserved across decode/re-encode)
+    implementation(libs.androidx.exifinterface)
+
+    // Media3 / ExoPlayer (video playback + colour-correction effects)
+    implementation(libs.media3.exoplayer)
+    implementation(libs.media3.ui)
+    implementation(libs.media3.common)
+    implementation(libs.media3.effect)
+
     // Firebase
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.auth)

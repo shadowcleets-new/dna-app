@@ -3,6 +3,8 @@ package com.dna.app
 import android.app.Application
 import androidx.hilt.work.HiltWorkerFactory
 import androidx.work.Configuration
+import coil3.ImageLoader
+import coil3.SingletonImageLoader
 import com.google.firebase.FirebaseApp
 import com.google.firebase.appcheck.FirebaseAppCheck
 import com.google.firebase.appcheck.debug.DebugAppCheckProviderFactory
@@ -14,6 +16,8 @@ import javax.inject.Inject
 class DnaApp : Application(), Configuration.Provider {
 
     @Inject lateinit var workerFactory: HiltWorkerFactory
+
+    @Inject lateinit var imageLoader: ImageLoader
 
     override val workManagerConfiguration: Configuration
         get() = Configuration.Builder()
@@ -29,5 +33,9 @@ class DnaApp : Application(), Configuration.Provider {
             PlayIntegrityAppCheckProviderFactory.getInstance()
         }
         FirebaseAppCheck.getInstance().installAppCheckProviderFactory(provider)
+
+        // Hand Coil our Hilt-built ImageLoader so AsyncImage everywhere uses the
+        // wide-gamut / ARGB_8888 configuration.
+        SingletonImageLoader.setSafe { imageLoader }
     }
 }

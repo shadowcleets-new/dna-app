@@ -14,6 +14,7 @@ import com.dna.app.data.local.db.toDomain
 import com.dna.app.data.local.db.toEntity
 import com.dna.app.data.remote.firebase.FirestoreSource
 import com.dna.app.data.remote.firebase.StorageSource
+import com.dna.app.domain.taxonomy.MediaType
 import com.dna.app.domain.taxonomy.SyncState
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
@@ -21,11 +22,9 @@ import java.io.File
 
 /**
  * Picks up a dress row that's already in Room with `syncState = PENDING_UPLOAD`
- * and pushes its three tiers to Firebase Storage + a doc to Firestore, then
- * flips the row to SYNCED.
- *
- * Enqueue via `UploadImageWorker.enqueue(ctx, dressId, thumbPath, displayPath,
- * originalPath)` after inserting the placeholder row.
+ * and pushes its tiers to Firebase Storage + a doc to Firestore, then flips
+ * the row to SYNCED. Branches on [MediaType] so videos upload their raw bytes
+ * (poster frames go through the same display/thumb tiers).
  */
 @HiltWorker
 class UploadImageWorker @AssistedInject constructor(
@@ -41,6 +40,9 @@ class UploadImageWorker @AssistedInject constructor(
         val thumbPath = inputData.getString(KEY_THUMB_PATH) ?: return Result.failure()
         val displayPath = inputData.getString(KEY_DISPLAY_PATH) ?: return Result.failure()
         val originalPath = inputData.getString(KEY_ORIGINAL_PATH) ?: return Result.failure()
+        val originalContentType = inputData.getString(KEY_ORIGINAL_CONTENT_TYPE) ?: "application/octet-stream"
+        val mediaTypeName = inputData.getString(KEY_MEDIA_TYPE) ?: MediaType.IMAGE.name
+        val mediaType = runCatching { MediaType.valueOf(mediaTypeName) }.getOrDefault(MediaType.IMAGE)
 
         val row = dao.byId(dressId) ?: return Result.failure()
 
@@ -48,14 +50,16 @@ class UploadImageWorker @AssistedInject constructor(
             val uploaded = storage.uploadDress(
                 uid = row.ownerUid,
                 dressId = dressId,
-                thumb = File(thumbPath),
-                display = File(displayPath),
-                original = File(originalPath),
+                thumb = StorageSource.TierFile(File(thumbPath), "image/jpeg"),
+                display = StorageSource.TierFile(File(displayPath), "image/jpeg"),
+                original = StorageSource.TierFile(File(originalPath), originalContentType),
+                isVideo = mediaType == MediaType.VIDEO,
             )
             val synced = row.toDomain().copy(
                 imageThumbUrl = uploaded.thumbUrl,
                 imageDisplayUrl = uploaded.displayUrl,
                 imageOriginalUrl = uploaded.originalUrl,
+                videoOriginalUrl = uploaded.videoOriginalUrl ?: row.videoOriginalUrl,
                 syncState = SyncState.SYNCED,
             )
             firestore.putDress(synced)
@@ -64,9 +68,10 @@ class UploadImageWorker @AssistedInject constructor(
             // Clean up staged files — originals live remotely now.
             listOf(thumbPath, displayPath, originalPath).forEach { runCatching { File(it).delete() } }
 
-            // Chain the auto-tag round-trip. Separate worker so tag failures
-            // don't retry the (much more expensive) upload.
-            TagDressWorker.enqueue(applicationContext, dressId)
+            // Tagging only makes sense for stills (Gemini Image input).
+            if (mediaType == MediaType.IMAGE) {
+                TagDressWorker.enqueue(applicationContext, dressId)
+            }
             Result.success()
         }.getOrElse { e ->
             val failed = row.copy(syncState = SyncState.FAILED)
@@ -82,6 +87,8 @@ class UploadImageWorker @AssistedInject constructor(
         private const val KEY_THUMB_PATH = "thumb"
         private const val KEY_DISPLAY_PATH = "display"
         private const val KEY_ORIGINAL_PATH = "original"
+        private const val KEY_ORIGINAL_CONTENT_TYPE = "originalContentType"
+        private const val KEY_MEDIA_TYPE = "mediaType"
         const val KEY_ERROR = "error"
 
         private const val MAX_RETRIES = 4
@@ -93,12 +100,16 @@ class UploadImageWorker @AssistedInject constructor(
             thumb: File,
             display: File,
             original: File,
+            originalContentType: String,
+            mediaType: MediaType,
         ) {
             val input = Data.Builder()
                 .putString(KEY_DRESS_ID, dressId)
                 .putString(KEY_THUMB_PATH, thumb.absolutePath)
                 .putString(KEY_DISPLAY_PATH, display.absolutePath)
                 .putString(KEY_ORIGINAL_PATH, original.absolutePath)
+                .putString(KEY_ORIGINAL_CONTENT_TYPE, originalContentType)
+                .putString(KEY_MEDIA_TYPE, mediaType.name)
                 .build()
 
             val request = OneTimeWorkRequestBuilder<UploadImageWorker>()

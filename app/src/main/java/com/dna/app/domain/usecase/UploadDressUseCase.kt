@@ -8,22 +8,20 @@ import com.dna.app.data.repo.DressRepository
 import com.dna.app.data.work.UploadImageWorker
 import com.dna.app.domain.model.DressItem
 import com.dna.app.domain.taxonomy.GarmentType
+import com.dna.app.domain.taxonomy.MediaType
 import com.dna.app.domain.taxonomy.Source
 import com.dna.app.domain.taxonomy.SyncState
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 
 /**
- * M3 upload pipeline (local-first):
- *   1. Downsample the PhotoPicker Uri into thumb/display/original tiers.
+ * Upload pipeline (local-first):
+ *   1. Stage the picked Uri into thumb/display/original tiers (originals are
+ *      bit-exact copies; videos are not transcoded).
  *   2. Insert a placeholder DressItem into Room with SyncState.PENDING_UPLOAD
- *      — so the Library grid updates instantly with a local thumb.
- *   3. Enqueue UploadImageWorker to push the three tiers to Firebase Storage
- *      and write the Firestore doc. The worker flips the row to SYNCED when
- *      done, so the grid re-resolves its image URLs from the remote tiers.
- *
- * Gemini auto-tagging lands in a follow-up: a second Worker that calls the
- * `tagDress` Cloud Function once the upload completes.
+ *      so the Library grid updates instantly with a local thumb.
+ *   3. Enqueue UploadImageWorker to push tiers to Firebase Storage and write
+ *      the Firestore doc. The worker flips the row to SYNCED when done.
  */
 class UploadDressUseCase @Inject constructor(
     @ApplicationContext private val context: Context,
@@ -36,17 +34,24 @@ class UploadDressUseCase @Inject constructor(
         val uid = auth.currentUid ?: error("Not signed in")
         val prepared = imageFiles.prepare(uri)
 
+        val localOriginalUri = android.net.Uri.fromFile(prepared.original).toString()
         val placeholder = DressItem(
             id = prepared.id,
             ownerUid = uid,
             // Local file:// URIs — Coil renders them before upload completes.
             imageThumbUrl = android.net.Uri.fromFile(prepared.thumb).toString(),
             imageDisplayUrl = android.net.Uri.fromFile(prepared.display).toString(),
-            imageOriginalUrl = android.net.Uri.fromFile(prepared.original).toString(),
+            imageOriginalUrl = localOriginalUri,
             garmentType = garmentType,
             source = Source.UPLOADED,
             syncState = SyncState.PENDING_UPLOAD,
             createdAt = System.currentTimeMillis(),
+            mediaType = prepared.mediaType,
+            mimeType = prepared.mimeType,
+            videoOriginalUrl = if (prepared.mediaType == MediaType.VIDEO) localOriginalUri else null,
+            durationMs = prepared.durationMs,
+            width = prepared.width,
+            height = prepared.height,
         )
         repo.insertLocal(placeholder)
 
@@ -56,6 +61,8 @@ class UploadDressUseCase @Inject constructor(
             thumb = prepared.thumb,
             display = prepared.display,
             original = prepared.original,
+            originalContentType = prepared.originalContentType,
+            mediaType = prepared.mediaType,
         )
         prepared.id
     }

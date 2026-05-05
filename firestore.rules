@@ -14,6 +14,13 @@ service cloud.firestore {
       allow read:   if signedIn() && isOwner(resource.data.ownerUid);
       allow create: if signedIn() && isOwner(request.resource.data.ownerUid);
       allow update, delete: if signedIn() && isOwner(resource.data.ownerUid);
+
+      // Per-dress colour-correction subdoc (M5c). Owner of the parent dress
+      // controls read/write — there is no cross-user sharing.
+      match /correction/{cid} {
+        allow read, write: if signedIn()
+          && isOwner(get(/databases/$(database)/documents/dresses/$(id)).data.ownerUid);
+      }
     }
 
     match /designs/{id} {

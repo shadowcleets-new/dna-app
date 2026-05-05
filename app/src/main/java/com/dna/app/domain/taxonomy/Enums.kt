@@ -15,6 +15,9 @@ enum class GarmentType {
     KURTI,
 }
 
+/** Whether a library item is a still image or a video clip. */
+enum class MediaType { IMAGE, VIDEO }
+
 enum class Source {
     /** User uploaded a photo of a real dress. */
     UPLOADED,

@@ -74,7 +74,7 @@ fun UploadDressScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Text(
-                text = "Pick a photo of a dress you've already made.",
+                text = "Pick a photo or video of a dress you've already made.",
                 style = MaterialTheme.typography.bodyLarge,
             )
             Spacer(Modifier.height(24.dp))
@@ -96,12 +96,12 @@ fun UploadDressScreen(
             Button(
                 onClick = {
                     picker.launch(
-                        PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly),
+                        PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageAndVideo),
                     )
                 },
                 enabled = !working,
             ) {
-                Text(if (working) "Saving…" else "Pick photo")
+                Text(if (working) "Saving…" else "Pick photo or video")
             }
 
             (state as? UploadState.Error)?.let { err ->

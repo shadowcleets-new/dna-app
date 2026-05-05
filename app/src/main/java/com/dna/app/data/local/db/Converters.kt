@@ -2,6 +2,7 @@ package com.dna.app.data.local.db
 
 import androidx.room.TypeConverter
 import com.dna.app.domain.taxonomy.GarmentType
+import com.dna.app.domain.taxonomy.MediaType
 import com.dna.app.domain.taxonomy.Source
 import com.dna.app.domain.taxonomy.SyncState
 
@@ -18,4 +19,7 @@ class Converters {
 
     @TypeConverter fun syncStateToString(v: SyncState): String = v.name
     @TypeConverter fun stringToSyncState(v: String): SyncState = SyncState.valueOf(v)
+
+    @TypeConverter fun mediaTypeToString(v: MediaType): String = v.name
+    @TypeConverter fun stringToMediaType(v: String): MediaType = MediaType.valueOf(v)
 }

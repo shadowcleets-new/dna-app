@@ -17,6 +17,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.AutoAwesome
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
@@ -36,6 +37,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.paging.compose.collectAsLazyPagingItems
 import coil3.compose.AsyncImage
 import com.dna.app.domain.model.DressItem
+import com.dna.app.domain.taxonomy.MediaType
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -104,14 +106,32 @@ private fun DressCard(dress: DressItem, onClick: () -> Unit) {
         onClick = onClick,
         shape = RoundedCornerShape(20.dp),
     ) {
-        AsyncImage(
-            model = dress.imageThumbUrl.ifBlank { dress.imageDisplayUrl },
-            contentDescription = null,
-            modifier = Modifier
-                .fillMaxWidth()
-                .aspectRatio(3f / 4f)
-                .clip(RoundedCornerShape(20.dp)),
-        )
+        Box {
+            AsyncImage(
+                model = dress.imageThumbUrl.ifBlank { dress.imageDisplayUrl },
+                contentDescription = null,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .aspectRatio(3f / 4f)
+                    .clip(RoundedCornerShape(20.dp)),
+            )
+            if (dress.mediaType == MediaType.VIDEO) {
+                androidx.compose.material3.Surface(
+                    shape = RoundedCornerShape(50),
+                    color = MaterialTheme.colorScheme.scrim.copy(alpha = 0.55f),
+                    modifier = Modifier
+                        .align(Alignment.Center)
+                        .padding(8.dp),
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.PlayArrow,
+                        contentDescription = "Video",
+                        tint = MaterialTheme.colorScheme.inverseOnSurface,
+                        modifier = Modifier.padding(12.dp),
+                    )
+                }
+            }
+        }
         dress.designSpec?.let { spec ->
             androidx.compose.foundation.layout.FlowRow(
                 modifier = Modifier
